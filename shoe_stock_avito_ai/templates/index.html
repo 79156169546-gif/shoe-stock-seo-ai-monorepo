@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shoe Stock & Avito AI Machine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b0f17;
+      --card-bg: #131b26;
+      --card-border: #1f2937;
+      --accent: #d4af37;
+      --accent-hover: #e5c158;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --green: #10b981;
+      --blue: #3b82f6;
+      --red: #ef4444;
+      --orange: #f59e0b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header {
+      background: #0f172a;
+      border-bottom: 1px solid var(--card-border);
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .logo-area { display: flex; align-items: center; gap: 12px; }
+    .logo-badge {
+      background: linear-gradient(135deg, #d4af37, #aa820a);
+      color: #0b0f17;
+      font-weight: 800;
+      font-size: 16px;
+      padding: 6px 12px;
+      border-radius: 8px;
+    }
+    .logo-title { font-size: 18px; font-weight: 700; }
+    .logo-sub { font-size: 12px; color: var(--text-muted); }
+    
+    .stats-bar { display: flex; gap: 24px; }
+    .stat-pill { display: flex; flex-direction: column; }
+    .stat-val { font-size: 18px; font-weight: 700; color: #fff; }
+    .stat-lbl { font-size: 11px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    nav {
+      background: #111827;
+      border-bottom: 1px solid var(--card-border);
+      padding: 0 32px;
+      display: flex;
+      gap: 32px;
+    }
+    .nav-btn {
+      padding: 16px 0;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--text-muted);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .nav-btn:hover { color: #fff; }
+    .nav-btn.active { color: var(--accent); border-color: var(--accent); }
+    .count-tag {
+      background: #1f2937;
+      color: #fff;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 12px;
+    }
+
+    main { padding: 32px; flex: 1; max-width: 1600px; margin: 0 auto; width: 100%; }
+
+    /* Uploader area */
+    .upload-card {
+      background: var(--card-bg);
+      border: 2px dashed #374151;
+      border-radius: 16px;
+      padding: 40px;
+      text-align: center;
+      margin-bottom: 32px;
+      transition: border-color 0.2s;
+    }
+    .upload-card:hover { border-color: var(--accent); }
+    .file-input-label {
+      background: var(--accent);
+      color: #0b0f17;
+      font-weight: 700;
+      padding: 12px 28px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-block;
+      margin-top: 16px;
+      transition: background 0.2s;
+    }
+    .file-input-label:hover { background: var(--accent-hover); }
+
+    /* Filters Bar */
+    .filters-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .season-group { display: flex; gap: 8px; }
+    .season-btn {
+      background: #1f2937;
+      border: 1px solid #374151;
+      color: var(--text-muted);
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .season-btn.active, .season-btn:hover { background: var(--accent); color: #0b0f17; border-color: var(--accent); }
+    .search-input {
+      background: #1f2937;
+      border: 1px solid #374151;
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      width: 280px;
+    }
+
+    /* Grid of items */
+    .items-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 24px;
+    }
+    .item-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .item-card:hover {
+      transform: translateY(-4px);
+      border-color: #374151;
+    }
+    .item-thumb-box {
+      width: 100%;
+      height: 280px;
+      position: relative;
+      background: #0f172a;
+      overflow: hidden;
+    }
+    .item-thumb {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .item-badge-season {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(11, 15, 23, 0.85);
+      backdrop-filter: blur(4px);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+    }
+    .item-badge-status {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .status-raw { background: #374151; color: #9ca3af; }
+    .status-ready { background: #10b981; color: #fff; }
+    .status-active { background: #3b82f6; color: #fff; }
+    .status-sold { background: #f59e0b; color: #000; }
+
+    .item-body { padding: 20px; flex: 1; display: flex; flex-direction: column; }
+    .item-sku { font-size: 12px; font-weight: 700; color: var(--accent); margin-bottom: 4px; }
+    .item-title { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 8px; line-height: 1.3; }
+    .item-meta { display: flex; gap: 12px; font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+    .price-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      background: #0f172a;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: auto;
+      margin-bottom: 16px;
+    }
+    .price-main { font-size: 20px; font-weight: 800; color: #10b981; }
+    .price-retail { font-size: 12px; text-decoration: line-through; color: #6b7280; }
+
+    .card-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .btn {
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: var(--accent); color: #0b0f17; }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary { background: #1f2937; color: #fff; }
+    .btn-secondary:hover { background: #374151; }
+    .btn-ai { background: linear-gradient(135deg, #6366f1, #a855f7); color: #fff; }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .modal-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      max-width: 1100px;
+      width: 100%;
+      max-height: 92vh;
+      overflow-y: auto;
+      padding: 32px;
+      position: relative;
+    }
+    .close-btn {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      background: none;
+      border: none;
+      color: #9ca3af;
+      font-size: 24px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo-area">
+      <div class="logo-badge">SHOE AI</div>
+      <div>
+        <div class="logo-title">Shoe Stock & Avito Machine</div>
+        <div class="logo-sub">Автоматизация склада 500 пар обуви и выгрузки</div>
+      </div>
+    </div>
+    <div class="stats-bar" id="statsBar">
+      <div class="stat-pill"><span class="stat-val" id="statTotal">0</span><span class="stat-lbl">Всего пар</span></div>
+      <div class="stat-pill"><span class="stat-val" id="statRaw">0</span><span class="stat-lbl">Сырых</span></div>
+      <div class="stat-pill"><span class="stat-val" id="statReady">0</span><span class="stat-lbl">Готово</span></div>
+      <div class="stat-pill"><span class="stat-val" id="statValue">0 ₽</span><span class="stat-lbl">Оценка склада</span></div>
+    </div>
+  </header>
+
+  <nav>
+    <button class="nav-btn active" onclick="switchTab('raw')">📥 Сырая обувь <span class="count-tag" id="tabRawCount">0</span></button>
+    <button class="nav-btn" onclick="switchTab('catalog')">📦 Каталог склада <span class="count-tag" id="tabCatalogCount">0</span></button>
+    <button class="nav-btn" onclick="switchTab('export')">🚀 Экспорт в Авито</button>
+  </nav>
+
+  <main>
+    <!-- TAB 1: RAW INTAKE -->
+    <section id="tabRaw">
+      <div class="upload-card">
+        <h2>Загрузка новой пары на склад</h2>
+        <p style="color: var(--text-muted); margin-top: 8px;">Перетащите сюда фотографии пары обуви с телефона или выберите файлы</p>
+        <div style="display: flex; justify-content: center; gap: 12px; margin-top: 20px; flex-wrap: wrap;">
+          <input type="text" id="rawBrand" placeholder="Бренд (Caprice, Tamaris...)" style="padding: 10px 16px; border-radius: 8px; background: #1f2937; border: 1px solid #374151; color: #fff; width: 180px;">
+          <input type="text" id="rawSize" placeholder="Размер (напр. 38)" style="padding: 10px 16px; border-radius: 8px; background: #1f2937; border: 1px solid #374151; color: #fff; width: 140px;">
+          <input type="text" id="rawArticle" placeholder="Артикул с бирки (если есть)" style="padding: 10px 16px; border-radius: 8px; background: #1f2937; border: 1px solid #374151; color: #fff; width: 220px;">
+          <select id="rawSeason" style="padding: 10px 16px; border-radius: 8px; background: #1f2937; border: 1px solid #374151; color: #fff; width: 160px;">
+            <option value="Демисезон 🍂">Демисезон 🍂</option>
+            <option value="Зима ❄️">Зима ❄️</option>
+            <option value="Лето ☀️">Лето ☀️</option>
+            <option value="Всесезонная 🌿">Всесезонная 🌿</option>
+          </select>
+        </div>
+        <input type="file" id="filePicker" multiple accept="image/*" style="display: none;" onchange="handleFileUpload(this.files)">
+        <label for="filePicker" class="file-input-label">Выбрать фотографии пары</label>
+      </div>
+
+      <div class="filters-bar">
+        <h3>Очередь на обработку ИИ</h3>
+        <button class="btn btn-ai" onclick="processAllRaw()">✨ Обработать все через ИИ</button>
+      </div>
+      <div class="items-grid" id="rawGrid"></div>
+    </section>
+
+    <!-- TAB 2: CATALOG -->
+    <section id="tabCatalog" style="display: none;">
+      <div class="filters-bar">
+        <div class="season-group">
+          <button class="season-btn active" onclick="filterSeason('')">Все сезоны</button>
+          <button class="season-btn" onclick="filterSeason('Демисезон')">Демисезон 🍂</button>
+          <button class="season-btn" onclick="filterSeason('Зима')">Зима ❄️</button>
+          <button class="season-btn" onclick="filterSeason('Лето')">Лето ☀️</button>
+          <button class="season-btn" onclick="filterSeason('Всесезонная')">Всесезонная 🌿</button>
+        </div>
+        <input type="text" class="search-input" placeholder="Поиск по бренду, размеру..." oninput="handleSearch(this.value)">
+      </div>
+      <div class="items-grid" id="catalogGrid"></div>
+    </section>
+
+    <!-- TAB 3: EXPORT -->
+    <section id="tabExport" style="display: none;">
+      <div style="background: var(--card-bg); padding: 32px; border-radius: 16px; border: 1px solid var(--card-border); max-width: 800px; margin: 0 auto;">
+        <h2>Автозагрузка в Авито (XML Feed)</h2>
+        <p style="color: var(--text-muted); margin: 12px 0 24px;">Сформируйте готовый файл автозагрузки Авито со всеми готовыми парами склада в один клик.</p>
+        <div style="background: #0f172a; padding: 20px; border-radius: 8px; margin-bottom: 24px;">
+          <h4 style="color: var(--accent); margin-bottom: 8px;">Инструкция по подключению:</h4>
+          <ol style="color: #d1d5db; line-height: 1.8; margin-left: 20px;">
+            <li>В личном кабинете Авито перейдите в раздел <b>Для бизнеса → Автозагрузка</b>.</li>
+            <li>Выберите категорию <i>«Одежда, обувь, аксессуары»</i> с тарифом за просмотры.</li>
+            <li>Скачайте сгенерированный XML-файл кнопкой ниже и загрузите в Авито.</li>
+          </ol>
+        </div>
+        <a href="/api/export/avito" class="btn btn-primary" style="display: inline-flex; text-decoration: none; padding: 14px 28px; font-size: 15px;">
+          📥 Скачать avito_feed.xml
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- DETAIL MODAL -->
+  <div class="modal-backdrop" id="detailModal">
+    <div class="modal-card">
+      <button class="close-btn" onclick="closeModal()">&times;</button>
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <script>
+    let currentTab = 'raw';
+    let currentSeason = '';
+    let searchQuery = '';
+
+    async function loadStats() {
+      const res = await fetch('/api/stats');
+      const data = await res.json();
+      document.getElementById('statTotal').innerText = data.total || 0;
+      document.getElementById('statRaw').innerText = data.raw_count || 0;
+      document.getElementById('statReady').innerText = data.ready_count || 0;
+      document.getElementById('statValue').innerText = (data.total_stock_value || 0).toLocaleString() + ' ₽';
+      document.getElementById('tabRawCount').innerText = data.raw_count || 0;
+      document.getElementById('tabCatalogCount').innerText = (data.ready_count || 0) + (data.active_count || 0);
+    }
+
+    async function loadItems() {
+      if (currentTab === 'raw') {
+        const res = await fetch('/api/items?status=raw');
+        const items = await res.json();
+        renderGrid('rawGrid', items);
+      } else if (currentTab === 'catalog') {
+        let url = '/api/items?';
+        if (currentSeason) url += `season=${encodeURIComponent(currentSeason)}&`;
+        if (searchQuery) url += `search=${encodeURIComponent(searchQuery)}&`;
+        const res = await fetch(url);
+        const items = await res.json();
+        renderGrid('catalogGrid', items);
+      }
+    }
+
+    function renderGrid(containerId, items) {
+      const container = document.getElementById(containerId);
+      if (!items || items.length === 0) {
+        container.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 60px;">Позиций пока нет</div>`;
+        return;
+      }
+      container.innerHTML = items.map(it => {
+        const thumb = it.cover_photo || (it.photos && it.photos.length > 0 ? it.photos[0] : '/static/covers/placeholder.jpg');
+        return `
+          <div class="item-card">
+            <div class="item-thumb-box">
+              <img src="${thumb}" class="item-thumb" alt="${it.title}">
+              <div class="item-badge-season">${it.season || 'Демисезон'}</div>
+              <div class="item-badge-status status-${it.status}">${it.status.toUpperCase()}</div>
+            </div>
+            <div class="item-body">
+              <div class="item-sku">${it.sku} • Размер ${it.size}</div>
+              <div class="item-title">${it.title}</div>
+              <div class="item-meta">
+                <span>Бренд: <b>${it.brand}</b></span>
+                <span>${it.material_upper}</span>
+              </div>
+              <div class="price-row">
+                <div>
+                  <div class="price-main">${it.price_target.toLocaleString()} ₽</div>
+                  <div style="font-size: 11px; color: #9ca3af;">Целевая цена продажи</div>
+                </div>
+                <div class="price-retail">${it.price_retail ? it.price_retail.toLocaleString() + ' ₽' : ''}</div>
+              </div>
+              <div class="card-actions">
+                ${it.status === 'raw' 
+                  ? `<button class="btn btn-ai" style="grid-column: 1/-1;" onclick="processItem(${it.id})">✨ Обработать через ИИ</button>`
+                  : `<button class="btn btn-secondary" onclick="openDetail(${it.id})">🔍 Карточка</button>
+                     <button class="btn btn-primary" onclick="copyAvitoText(${it.id})">📋 Скопировать</button>`
+                }
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      document.getElementById('tabRaw').style.display = tab === 'raw' ? 'block' : 'none';
+      document.getElementById('tabCatalog').style.display = tab === 'catalog' ? 'block' : 'none';
+      document.getElementById('tabExport').style.display = tab === 'export' ? 'block' : 'none';
+      loadItems();
+    }
+
+    function filterSeason(season) {
+      currentSeason = season;
+      document.querySelectorAll('.season-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      loadItems();
+    }
+
+    function handleSearch(q) {
+      searchQuery = q;
+      loadItems();
+    }
+
+    async function handleFileUpload(files) {
+      if (!files || files.length === 0) return;
+      const formData = new FormData();
+      for (let f of files) formData.append('files', f);
+      
+      const brand = document.getElementById('rawBrand').value.trim();
+      const size = document.getElementById('rawSize').value.trim() || '38';
+      const article = document.getElementById('rawArticle').value.trim();
+      const season = document.getElementById('rawSeason').value;
+      
+      let notes = [];
+      if (brand) notes.push(brand);
+      if (article) notes.push(article);
+      if (season) notes.push(season);
+      
+      formData.append('size', size);
+      formData.append('notes', notes.join(' '));
+
+      const res = await fetch('/api/items/raw', { method: 'POST', body: formData });
+      if (res.ok) {
+        document.getElementById('rawArticle').value = '';
+        loadStats();
+        loadItems();
+      }
+    }
+
+    async function processItem(id) {
+      const res = await fetch(`/api/items/${id}/process`, { method: 'POST' });
+      if (res.ok) {
+        loadStats();
+        loadItems();
+      }
+    }
+
+    async function processAllRaw() {
+      const res = await fetch('/api/items?status=raw');
+      const items = await res.json();
+      for (let it of items) {
+        await processItem(it.id);
+      }
+      loadStats();
+      loadItems();
+    }
+
+    async function openDetail(id) {
+      const res = await fetch(`/api/items/${id}`);
+      const it = await res.json();
+      const content = document.getElementById('modalContent');
+
+      // Prepare photo gallery
+      const allPhotos = [];
+      if (it.cover_photo) allPhotos.push(it.cover_photo);
+      if (it.catalog_photos) {
+        it.catalog_photos.forEach(p => { if (!allPhotos.includes(p)) allPhotos.push(p); });
+      }
+      if (it.photos) {
+        it.photos.forEach(p => { if (!allPhotos.includes(p)) allPhotos.push(p); });
+      }
+
+      // Prepare links HTML
+      const linksHtml = (it.reference_links && it.reference_links.length > 0)
+        ? it.reference_links.map(l => {
+            let statusBadge = '<span style="font-size: 11px; background: #374151; color: #9ca3af; padding: 2px 8px; border-radius: 4px;">Не проверено</span>';
+            if (l.status === 'confirmed') statusBadge = '<span style="font-size: 11px; background: #10b981; color: #fff; padding: 2px 8px; border-radius: 4px;">✅ Подтверждено</span>';
+            if (l.status === 'rejected') statusBadge = '<span style="font-size: 11px; background: #ef4444; color: #fff; padding: 2px 8px; border-radius: 4px;">❌ Не она</span>';
+
+            return `
+              <div style="display: flex; align-items: center; justify-content: space-between; background: #1f2937; padding: 8px 12px; border-radius: 8px; margin-bottom: 8px; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <b style="color: #fff; font-size: 13px;">${l.title}</b>
+                  ${statusBadge}
+                </div>
+                <div style="display: flex; gap: 6px;">
+                  <a href="${l.url}" target="_blank" class="btn btn-secondary" style="padding: 4px 10px; font-size: 11px; text-decoration: none;">🔗 Открыть</a>
+                  <button class="btn btn-primary" style="padding: 4px 10px; font-size: 11px;" onclick="verifyLink(${it.id}, ${l.id}, 'confirm')">✅ Это она</button>
+                  <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 11px; background: #374151;" onclick="verifyLink(${it.id}, ${l.id}, 'reject')">❌</button>
+                </div>
+              </div>
+            `;
+          }).join('')
+        : '<div style="color: var(--text-muted); font-size: 13px;">Ссылки формируются при обработке...</div>';
+
+      content.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div>
+            <h2 style="color: #fff; font-size: 20px;">${it.title}</h2>
+            <div style="color: var(--accent); font-weight: 700; font-size: 13px; margin-top: 4px;">${it.sku} • ${it.brand} • Размер ${it.size} • ${it.season}</div>
+          </div>
+          <button class="btn btn-ai" id="regenBtn" onclick="regeneratePhotos(${it.id})">🔄 Перегенерировать фото</button>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+          <!-- LEFT COLUMN: PHOTOS & STORE LINKS -->
+          <div>
+            <h4 style="margin-bottom: 8px;">Галерея карточки (Стиль Травертин + Оригиналы):</h4>
+            <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 16px;">
+              ${allPhotos.map(p => `
+                <img src="${p}" style="height: 140px; border-radius: 8px; cursor: pointer; border: 2px solid #374151;" onclick="document.getElementById('mainPreviewImg').src = '${p}'">
+              `).join('')}
+            </div>
+            <div style="background: #0f172a; border-radius: 12px; overflow: hidden; height: 380px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+              <img id="mainPreviewImg" src="${allPhotos[0] || ''}" style="max-height: 100%; max-width: 100%; object-fit: contain;">
+            </div>
+
+            <h4 style="margin-bottom: 8px;">🔍 Поиск точной модели в магазинах:</h4>
+            <div style="background: #0f172a; padding: 12px; border-radius: 12px; border: 1px solid #1f2937;">
+              ${linksHtml}
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN: FULL EDIT FORM -->
+          <div>
+            <h4 style="margin-bottom: 12px;">Редактирование параметров карточки:</h4>
+            <div style="background: #0f172a; padding: 16px; border-radius: 12px; border: 1px solid #1f2937; display: flex; flex-direction: column; gap: 12px;">
+              
+              <div>
+                <label style="font-size: 11px; color: #9ca3af;">Заголовок для Авито:</label>
+                <input type="text" id="editTitle" value="${it.title}" style="width: 100%; padding: 8px 12px; border-radius: 6px; background: #1f2937; border: 1px solid #374151; color: #fff; font-size: 13px; margin-top: 4px;">
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div>
+                  <label style="font-size: 11px; color: #9ca3af;">Бренд:</label>
+                  <input type="text" id="editBrand" value="${it.brand}" style="width: 100%; padding: 8px 12px; border-radius: 6px; background: #1f2937; border: 1px solid #374151; color: #fff; font-size: 13px; margin-top: 4px;">
+                </div>
+                <div>
+                  <label style="font-size: 11px; color: #9ca3af;">Размер:</label>
+                  <input type="text" id="editSize" value="${it.size}" style="width: 100%; padding: 8px 12px; border-radius: 6px; background: #1f2937; border: 1px solid #374151; color: #fff; font-size: 13px; margin-top: 4px;">
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div>
+                  <label style="font-size: 11px; color: #9ca3af;">Сезон:</label>
+                  <select id="editSeason" style="width: 100%; padding: 8px 12px; border-radius: 6px; background: #1f2937; border: 1px solid #374151; color: #fff; font-size: 13px; margin-top: 4px;">
+                    <option value="Демисезон 🍂" ${it.season.includes('Демисезон') ? 'selected' : ''}>Демисезон 🍂</option>
+                    <option value="Зима ❄️" ${it.season.includes('Зима') ? 'selected' : ''}>Зима ❄️</option>
+                    <option value="Лето ☀️" ${it.season.includes('Лето') ? 'selected' : ''}>Лето ☀️</option>
+                    <option value="Всесезонная 🌿" ${it.season.includes('Всесезонная') ? 'selected' : ''}>Всесезонная 🌿</option>
+                  </select>
+                </div>
+                <div>
+                  <label style="font-size: 11px; color: #9ca3af;">Статус на складе:</label>
+                  <select id="editStatus" style="width: 100%; padding: 8px 12px; border-radius: 6px; background: #1f2937; border: 1px solid #374151; color: #fff; font-size: 13px; margin-top: 4px;">
+                    <option value="ready" ${it.status === 'ready' ? 'selected' : ''}>Готово к выгрузке</option>
+                    <option value="active" ${it.status === 'active' ? 'selected' : ''}>Опубликовано на Авито</option>
+                    <option value="sold" ${it.status === 'sold' ? 'selected' : ''}>Продано</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                <div>
+                  <label style="font-size: 11px; color: #9ca3af;">Цена продажи (₽):</label>
+                  <input type="number" id="editPriceTarget" value="${it.price_target}" style="width: 100%; padding: 8px 12px; border-radius: 6px; background: #1f2937; border: 1px solid #374151; color: #10b981; font-weight: 700; font-size: 14px; margin-top: 4px;">
+                </div>
+                <div>
+                  <label style="font-size: 11px; color: #9ca3af;">РРЦ в магазине (₽):</label>
+                  <input type="number" id="editPriceRetail" value="${it.price_retail}" style="width: 100%; padding: 8px 12px; border-radius: 6px; background: #1f2937; border: 1px solid #374151; color: #9ca3af; font-size: 13px; margin-top: 4px;">
+                </div>
+              </div>
+
+              <div>
+                <label style="font-size: 11px; color: #9ca3af;">Текст объявления:</label>
+                <textarea id="editDesc" style="width: 100%; height: 180px; background: #1f2937; border: 1px solid #374151; color: #e5e7eb; padding: 10px; border-radius: 6px; font-family: monospace; font-size: 11px; margin-top: 4px;">${it.description}</textarea>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px;">
+                <button class="btn btn-primary" onclick="saveFullItem(${it.id})">💾 Сохранить карточку</button>
+                <button class="btn btn-secondary" onclick="copyModalText()">📋 Скопировать текст</button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      `;
+      document.getElementById('detailModal').style.display = 'flex';
+    }
+
+    async function verifyLink(itemId, linkId, action) {
+      const res = await fetch(`/api/items/${itemId}/verify-link`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ link_id: linkId, action: action })
+      });
+      if (res.ok) {
+        openDetail(itemId);
+      }
+    }
+
+    async function regeneratePhotos(itemId) {
+      const btn = document.getElementById('regenBtn');
+      btn.innerText = '⏳ Генерация...';
+      btn.disabled = true;
+      const res = await fetch(`/api/items/${itemId}/regenerate-photos`, { method: 'POST' });
+      if (res.ok) {
+        openDetail(itemId);
+        loadStats();
+        loadItems();
+      } else {
+        alert('Ошибка перегенерации фото');
+        btn.innerText = '🔄 Перегенерировать фото';
+        btn.disabled = false;
+      }
+    }
+
+    async function saveFullItem(id) {
+      const updateData = {
+        title: document.getElementById('editTitle').value.trim(),
+        brand: document.getElementById('editBrand').value.trim(),
+        size: document.getElementById('editSize').value.trim(),
+        season: document.getElementById('editSeason').value,
+        status: document.getElementById('editStatus').value,
+        price_target: parseInt(document.getElementById('editPriceTarget').value) || 0,
+        price_retail: parseInt(document.getElementById('editPriceRetail').value) || 0,
+        description: document.getElementById('editDesc').value
+      };
+
+      const res = await fetch(`/api/items/${id}/update`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(updateData)
+      });
+      if (res.ok) {
+        alert('Карточка успешно обновлена!');
+        loadStats();
+        loadItems();
+        closeModal();
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('detailModal').style.display = 'none';
+    }
+
+    async function savePrice(id) {
+      const price = document.getElementById('editPrice').value;
+      await fetch(`/api/items/${id}/update`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ price_target: parseInt(price) })
+      });
+      loadStats();
+      loadItems();
+    }
+
+    async function copyAvitoText(id) {
+      const res = await fetch(`/api/items/${id}`);
+      const it = await res.json();
+      navigator.clipboard.writeText(it.description);
+      alert('Текст скопирован в буфер обмена!');
+    }
+
+    function copyModalText() {
+      const t = document.getElementById('descText');
+      t.select();
+      navigator.clipboard.writeText(t.value);
+      alert('Текст скопирован в буфер обмена!');
+    }
+
+    // Init
+    loadStats();
+    loadItems();
+  </script>
+</body>
+</html>
